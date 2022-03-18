@@ -1,5 +1,5 @@
-import { UserLoginDto } from './dto/userLogin.dto';
-import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import { UserLoginDto } from './dto/user-login.dto';
+import { VerifyEmailDto } from './dto/verify-eamil';
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
