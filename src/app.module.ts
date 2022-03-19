@@ -1,3 +1,4 @@
+import { ExceptionModule } from './exception/exception.module';
 import { AuthService } from './auth/auth.service';
 import { validationSchema } from './config/validationSchema';
 import { Module } from '@nestjs/common';
@@ -11,14 +12,13 @@ import authConfig from 'src/config/authConfig';
 import emailConfig from './config/emailConfig';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
 
 @Module({
   imports: [
     UsersModule,
     EmailModule,
     AuthModule,
+    ExceptionModule,
 
     ConfigModule.forRoot({
       envFilePath: [`${__dirname}/config/env/.${process.env.NODE_ENV}.env`],
@@ -37,18 +37,6 @@ import * as winston from 'winston';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false,
       migrationsRun: true,
-    }),
-
-    WinstonModule.forRoot({
-      transports: [
-        new winston.transports.Console({
-          level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike('MyApp', { prettyPrint: true }),
-          ),
-        }),
-      ],
     }),
   ],
   controllers: [AppController],
