@@ -1,3 +1,4 @@
+import { AuthService } from './auth/auth.service';
 import { validationSchema } from './config/validationSchema';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -6,8 +7,10 @@ import { UsersModule } from './users/users.module';
 import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
 import { ConfigModule } from '@nestjs/config';
+import authConfig from 'src/config/authConfig';
 import emailConfig from './config/emailConfig';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,7 +19,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
     ConfigModule.forRoot({
       envFilePath: [`${__dirname}/config/env/.${process.env.NODE_ENV}.env`],
-      load: [emailConfig],
+      load: [emailConfig, authConfig],
       isGlobal: true,
       validationSchema,
     }),
@@ -29,10 +32,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       password: process.env.DATABASE_PASSWORD,
       database: 'popan',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: Boolean(process.env.DATABASE_SYNCHRONIZE),
+      synchronize: false,
+      migrationsRun: true,
     }),
+
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EmailService],
+  providers: [AppService, EmailService, AuthService],
 })
 export class AppModule {}

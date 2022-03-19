@@ -1,7 +1,8 @@
+import { AuthService } from './../auth/auth.service';
 import { UserEntity } from './entities/user.entity';
 import { UserInfo } from './UserInfo';
 import * as uuid from 'uuid';
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
@@ -11,6 +12,7 @@ import { ulid } from 'ulid';
 export class UsersService {
   constructor(
     private emailService: EmailService,
+    private authService: AuthService,
     private connection: Connection,
 
     @InjectRepository(UserEntity)
@@ -53,14 +55,44 @@ export class UsersService {
   }
 
   async verifyEmail(signupVerifyToken: string): Promise<string> {
-    throw new Error('함수 구현 계획');
+    const user = await this.usersRepository.findOne({ signupVerifyToken });
+
+    if (!user) {
+      throw new NotFoundException('유저가 존재하지 않습니다');
+    }
+
+    return this.authService.login({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
   }
 
   async login(email: string, password: string): Promise<string> {
-    throw new Error('함수 구현 계획');
+    const user = await this.usersRepository.findOne({ email, password });
+
+    if (!user) {
+      throw new NotFoundException('유저가 존재하지 않습니다');
+    }
+
+    return this.authService.login({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
   }
 
   async getUserInfo(userId: string): Promise<UserInfo> {
-    throw new Error('함수 구현 계획');
+    const user = await this.usersRepository.findOne({ id: userId });
+
+    if (!user) {
+      throw new NotFoundException('유저가 존재하지 않습니다');
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
   }
 }
