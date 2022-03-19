@@ -1,14 +1,27 @@
+import { UserEntity } from './entities/user.entity';
 import { UserInfo } from './UserInfo';
 import * as uuid from 'uuid';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Connection, Repository } from 'typeorm';
+import { ulid } from 'ulid';
 
 @Injectable()
 export class UsersService {
-  constructor(private emailService: EmailService) {}
+  constructor(
+    private emailService: EmailService,
+    private connection: Connection,
+
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
+  ) {}
 
   async create(name: string, email: string, password: string) {
-    await this.checkUserExists(email);
+    const userExist = await this.checkUserExists(email);
+    if (userExist) {
+      throw new UnprocessableEntityException('해당 이메일로는 가입할 수 없습니다.');
+    }
 
     const signupVerifyToken = uuid.v1();
 
@@ -17,23 +30,26 @@ export class UsersService {
   }
 
   private async checkUserExists(email: string) {
-    return false;
+    const user = await this.usersRepository.findOne({ email });
+
+    return user !== undefined;
   }
 
-  private async saveUser(
-    name: string,
-    email: string,
-    password: string,
-    signupVerifyToken: string,
-  ) {
-    return;
+  private async saveUser(name: string, email: string, password: string, signupVerifyToken: string) {
+    await this.connection.transaction(async (manager) => {
+      const user = new UserEntity();
+      user.id = ulid();
+      user.name = name;
+      user.email = email;
+      user.password = password;
+      user.signupVerifyToken = signupVerifyToken;
+
+      await manager.save(user);
+    });
   }
 
   private async sendMemberJoinEmail(email: string, signupVerifyToken: string) {
-    await this.emailService.sendMemberJoinVerification(
-      email,
-      signupVerifyToken,
-    );
+    await this.emailService.sendMemberJoinVerification(email, signupVerifyToken);
   }
 
   async verifyEmail(signupVerifyToken: string): Promise<string> {
