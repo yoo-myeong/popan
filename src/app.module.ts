@@ -1,3 +1,4 @@
+import { LoggingModule } from './logging/logging.module';
 import { ExceptionModule } from './exception/exception.module';
 import { AuthService } from './auth/auth.service';
 import { validationSchema } from './config/validationSchema';
@@ -19,6 +20,7 @@ import { AuthModule } from './auth/auth.module';
     EmailModule,
     AuthModule,
     ExceptionModule,
+    LoggingModule,
 
     ConfigModule.forRoot({
       envFilePath: [`${__dirname}/config/env/.${process.env.NODE_ENV}.env`],
