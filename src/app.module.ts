@@ -13,6 +13,9 @@ import authConfig from 'src/config/authConfig';
 import emailConfig from './config/emailConfig';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { HealthCheckController } from './health-check/health-check.controller';
+import { TerminusModule } from '@nestjs/terminus';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -21,6 +24,8 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     ExceptionModule,
     LoggingModule,
+    TerminusModule,
+    HttpModule,
 
     ConfigModule.forRoot({
       envFilePath: [`${__dirname}/config/env/.${process.env.NODE_ENV}.env`],
@@ -41,7 +46,7 @@ import { AuthModule } from './auth/auth.module';
       migrationsRun: true,
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService, EmailService, AuthService],
+  controllers: [AppController, HealthCheckController],
+  providers: [AppService, EmailService, AuthService, HealthCheckController],
 })
 export class AppModule {}
